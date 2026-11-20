@@ -1,5 +1,7 @@
 # PlanoLibre
 
+*[Read this in English](README.en.md)*
+
 Editor de planos de código abierto que funciona **100 % en tu computador**, dentro del navegador. Sin cuentas, sin nube, sin instalación pesada.
 
 Está pensado para dos tipos de persona a la vez:
