@@ -113,6 +113,79 @@ Para que la escala sea real hay que imprimir al 100 %, sin "ajustar a la página
 
 ![Diálogo para imprimir en varias hojas, con la vista previa de las páginas](docs/img/varias-hojas.png)
 
+## Para agentes y scripts: línea de comandos y MCP
+
+Además de la app, el repositorio trae una línea de comandos y un servidor [MCP](https://modelcontextprotocol.io) para que un agente (Claude u otro cliente MCP) dibuje, revise y exporte planos sin abrir el navegador. Usan el mismo código que la app, así que un plano hecho por un agente se abre y se sigue editando en PlanoLibre.
+
+Todavía no está publicado en npm: se usa desde una copia del repositorio.
+
+```bash
+git clone https://github.com/AlexanderMercado/planolibre.git
+cd planolibre
+npm install        # también compila bin/planolibre.mjs
+```
+
+### Línea de comandos
+
+```bash
+node bin/planolibre.mjs convertir casa.dxf casa.pdf --escala 50 --papel A3
+node bin/planolibre.mjs convertir casa.plano casa-hojas.pdf --hojas --escala 25
+node bin/planolibre.mjs convertir casa.dxf casa.plano      # DXF/DWG a plano editable
+node bin/planolibre.mjs info casa.plano                    # recintos, superficies y advertencias
+node bin/planolibre.mjs ayuda
+```
+
+Lee `.plano`, `.dxf` y `.dwg`; escribe `.plano`, `.pdf`, `.dxf`, `.svg` y `.png`.
+
+### Servidor MCP
+
+El servidor trabaja sobre archivos `.plano` de **una carpeta que tú eliges**: no lee ni escribe fuera de ella. La configuración habitual de un cliente MCP es:
+
+```json
+{
+  "mcpServers": {
+    "planolibre": {
+      "command": "node",
+      "args": ["/ruta/a/planolibre/bin/planolibre.mjs", "mcp", "--carpeta", "/ruta/a/mis-planos"]
+    }
+  }
+}
+```
+
+En Claude Code:
+
+```bash
+claude mcp add planolibre -- node /ruta/a/planolibre/bin/planolibre.mjs mcp --carpeta /ruta/a/mis-planos
+```
+
+Herramientas que ofrece:
+
+| Herramienta | Qué hace |
+| --- | --- |
+| `crear_plano` | Crea un plano vacío |
+| `agregar_habitacion` | Habitación rectangular completa, unida a lo que ya exista |
+| `agregar_muro` | Un muro entre dos puntos |
+| `agregar_abertura` | Puerta, ventana o vano sobre el muro más cercano |
+| `listar_muebles`, `agregar_mueble` | Catálogo de 42 muebles y colocación |
+| `nombrar_recinto`, `agregar_texto` | Nombres y notas |
+| `eliminar` | Borra el muro, abertura, mueble o texto más cercano a un punto |
+| `resumen` | Recintos, superficies, medidas y advertencias, en datos |
+| `vista_previa` | Imagen del plano, para que el agente lo revise |
+| `importar` | DXF o DWG a muros editables, calco o visor |
+| `exportar` | PDF a escala, PDF en varias hojas, DXF o SVG |
+
+Cada herramienta que modifica el plano devuelve el resumen actualizado, con advertencias como "hay un extremo de muro sin unir" o "un recinto no tiene nombre", para que el agente se corrija solo. Las medidas van en metros, con X hacia la derecha e Y hacia abajo.
+
+Este plano lo dibujó un cliente MCP de prueba con 14 llamadas (cuatro habitaciones, seis aberturas y dos muebles):
+
+![Plano de un departamento dibujado a través del servidor MCP](docs/img/hecho-por-agente.png)
+
+Lo que conviene saber:
+
+- La vista previa en imagen y la exportación a PNG usan el paquete opcional `@resvg/resvg-js`. Si no se pudo instalar en tu sistema, el resto funciona igual.
+- La lectura de DWG fuera del navegador carga bien el lector, pero no se ha probado con archivos DWG reales.
+- Por ahora no importa PDF ni imágenes desde la línea de comandos; eso sólo está en la app.
+
 ## Formatos: qué se puede y qué no
 
 | Formato | Exportar | Importar | Notas |
@@ -160,8 +233,10 @@ src/
               (pdfvec.ts saca los trazos de un PDF; vectorize.ts, los de una imagen;
                poster.ts reparte un plano grande en varias hojas)
   ui/         Barra superior, paneles y diálogos
+  agent/      Operaciones de alto nivel y servidor MCP para agentes
+  cli/        Línea de comandos (Node)
   view3d.ts   Vista 3D (three.js)
-tests/        Pruebas de geometría, DXF, PDF, proyecto y reconocimiento de muros
+tests/        Pruebas de geometría, DXF, PDF, proyecto, reconocimiento de muros y agentes
 ```
 
 La idea central: `scene.ts` genera **una sola lista de primitivas** (polilíneas, arcos, textos) que alimenta la pantalla, el PDF, el SVG, el PNG y el DXF. Lo que ves es exactamente lo que exportas.
@@ -169,7 +244,7 @@ La idea central: `scene.ts` genera **una sola lista de primitivas** (polilíneas
 Las bibliotecas pesadas se cargan sólo cuando hacen falta: jsPDF al exportar, pdf.js al importar un PDF, three.js al entrar a 3D y LibreDWG (8 MB) al abrir un DWG.
 
 ```bash
-npm test          # 27 pruebas automáticas
+npm test          # 35 pruebas automáticas
 npm run typecheck
 ```
 

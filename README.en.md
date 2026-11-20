@@ -94,6 +94,35 @@ Print at 100 %, without "fit to page", or the scale will be wrong.
 
 ![Dialog for printing across several sheets, with the page preview](docs/img/varias-hojas.png)
 
+## For agents and scripts: CLI and MCP server
+
+The repository also ships a command line tool and an [MCP](https://modelcontextprotocol.io) server, so an agent (Claude or any MCP client) can draw, check and export floor plans without opening the browser. They share the app's code, so a plan made by an agent opens and stays editable in PlanoLibre. Not published to npm yet: use it from a clone.
+
+```bash
+git clone https://github.com/AlexanderMercado/planolibre.git
+cd planolibre
+npm install        # also builds bin/planolibre.mjs
+node bin/planolibre.mjs convertir house.dxf house.pdf --escala 50 --papel A3
+node bin/planolibre.mjs info house.plano
+```
+
+MCP client configuration. The server only reads and writes inside the folder you pass:
+
+```json
+{
+  "mcpServers": {
+    "planolibre": {
+      "command": "node",
+      "args": ["/path/to/planolibre/bin/planolibre.mjs", "mcp", "--carpeta", "/path/to/my-plans"]
+    }
+  }
+}
+```
+
+Tool names, parameters and descriptions are in Spanish (`crear_plano`, `agregar_habitacion`, `agregar_abertura`, `resumen`, `vista_previa`, `importar`, `exportar`…). Every tool that changes the plan returns an updated summary with areas and warnings, so the agent can correct itself. Measurements are in metres, X to the right and Y downwards. See the [Spanish README](README.md#para-agentes-y-scripts-línea-de-comandos-y-mcp) for the full tool list.
+
+![Apartment plan drawn through the MCP server](docs/img/hecho-por-agente.png)
+
 ## Interface glossary
 
 | Spanish | English |
