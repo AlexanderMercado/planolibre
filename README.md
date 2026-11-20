@@ -4,6 +4,10 @@
 
 Editor de planos de código abierto que funciona **100 % en tu computador**, dentro del navegador. Sin cuentas, sin nube, sin instalación pesada.
 
+**[Probarlo en línea](https://alexandermercado.github.io/planolibre/)** — no hay que instalar nada.
+
+![Editor de PlanoLibre con un departamento de ejemplo: muros, recintos coloreados, medidas y cuadro de superficies](docs/img/editor.png)
+
 Está pensado para dos tipos de persona a la vez:
 
 - **Sin experiencia:** arrastras un rectángulo y tienes una habitación con sus medidas y su superficie. Arrastras un punto y todo se recalcula al instante.
@@ -64,6 +68,8 @@ Puntos existentes, muros, alineación con otros puntos, ángulos de 45°/90°, c
 
 Técnico (blanco y negro), Color (recintos coloreados por uso), Blueprint y **3D** navegable con muros, vanos, vidrios y mobiliario.
 
+![Vista 3D del mismo plano](docs/img/vista-3d.png)
+
 **Guardado**
 
 - Autoguardado en el navegador (IndexedDB) y lista de "Mis proyectos".
@@ -104,6 +110,8 @@ Exportar → "PDF en varias hojas" (o "Imprimir en PDF" en el visor) reparte el 
 - Cada hoja lleva su código (A1, A2, B1…), marcas de corte y el código de las hojas vecinas; la primera página es una guía de armado.
 
 Para que la escala sea real hay que imprimir al 100 %, sin "ajustar a la página".
+
+![Diálogo para imprimir en varias hojas, con la vista previa de las páginas](docs/img/varias-hojas.png)
 
 ## Formatos: qué se puede y qué no
 

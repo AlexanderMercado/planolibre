@@ -4,6 +4,10 @@
 
 An open-source floor plan editor that runs **entirely in your browser**. No account, no cloud, nothing to install.
 
+**[Try it online](https://alexandermercado.github.io/planolibre/)**
+
+![PlanoLibre editor showing a sample apartment: walls, colour-coded rooms, dimensions and an area schedule](docs/img/editor.png)
+
 > **The interface is in Spanish only.** The app is usable without reading much (the tools are icons and you draw by dragging), and there is a small glossary below. This page is a summary; the [Spanish README](README.md) is the full reference.
 
 It is built for two kinds of people at once:
@@ -45,6 +49,8 @@ The `dist/` folder is ready to publish as is.
 - **Levels.** Several floors, with the one below shown in grey as a reference.
 - **Saving.** Autosave in the browser, plus a readable `.plano` project file (JSON) you can back up, share or put under version control.
 
+![3D view of the same plan](docs/img/vista-3d.png)
+
 ## File formats
 
 | Format | Export | Import |
@@ -85,6 +91,8 @@ Always review the result. A single Ctrl+Z undoes the whole conversion.
 - Each sheet carries its code (A1, A2, B1…), crop marks and the code of its neighbours. The first page is an assembly guide.
 
 Print at 100 %, without "fit to page", or the scale will be wrong.
+
+![Dialog for printing across several sheets, with the page preview](docs/img/varias-hojas.png)
 
 ## Interface glossary
 
