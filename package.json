@@ -1,0 +1,27 @@
+{
+  "name": "planolibre",
+  "version": "0.1.0",
+  "description": "Editor de planos 2D/3D de código abierto, fácil de usar, que funciona 100% local en el navegador.",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mlightcad/libredwg-web": "^0.9.0",
+    "jspdf": "^4.2.1",
+    "pdfjs-dist": "^4.10.38",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.170.0",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.0",
+    "vitest": "^4.1.12"
+  }
+}
