@@ -7,7 +7,13 @@ Está pensado para dos tipos de persona a la vez:
 - **Sin experiencia:** arrastras un rectángulo y tienes una habitación con sus medidas y su superficie. Arrastras un punto y todo se recalcula al instante.
 - **Con experiencia:** activas el modo **Avanzado** y aparecen cotas manuales, líneas libres, coordenadas exactas, capas, alturas, ajustes de precisión y exportación a CAD.
 
-## Cómo usarlo
+## Usarlo en línea
+
+No hay que instalar nada: **https://alexandermercado.github.io/planolibre/**
+
+Funciona igual que en tu computador: los planos se guardan en tu navegador y nada se envía a un servidor. Cada cambio en la rama `main` se vuelve a publicar solo (ver `.github/workflows/pages.yml`).
+
+## Cómo usarlo en tu computador
 
 Necesitas [Node.js](https://nodejs.org) 20 o superior.
 
