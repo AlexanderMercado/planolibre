@@ -29,7 +29,10 @@ Convenciones:
 - En agregar_habitacion, por defecto x, y, ancho y largo son del espacio interior útil. Entre dos habitaciones contiguas deja el grosor del muro: si una termina en x = 4 y el muro mide 0,15, la siguiente empieza en x = 4,15. Así comparten el muro.
 - Los muros se unen y se parten solos donde se tocan o se cruzan; los recintos y sus superficies se calculan solos.
 
-Forma de trabajar: crea el plano, agrega las habitaciones, luego puertas y ventanas, y revisa con "resumen" (superficies y advertencias) y "vista_previa" (imagen) antes de exportar. Cada herramienta que modifica el plano devuelve el resumen actualizado: léelo y corrige lo que avise.`;
+- Para puertas y ventanas no hace falta calcular coordenadas: indica "recinto" y "lado" (norte, sur, este u oeste) y, si quieres, "posicion" de 0 a 1 a lo largo de ese lado.
+- Muebles: con rotación 0 el respaldo o la cabecera mira al norte. Lo más simple es "apoyar_en_muro", que lo pega al muro más cercano con el respaldo contra él, o "respaldo_hacia".
+
+Forma de trabajar: crea el plano, agrega las habitaciones, luego puertas y ventanas, después los muebles, y revisa con "resumen" y "vista_previa" antes de exportar. Cada herramienta que modifica el plano responde con un estado corto: cuántos recintos hay, la superficie total y las advertencias (muros sin unir, recintos sin puerta, muebles encimados, metidos en un muro o que estorban una puerta). Léelas y corrígelas. "resumen" da el detalle completo, con el rectángulo interior de cada recinto y los ejes de todos los muros.`;
 
 const archivo = z.string().min(1).describe('Archivo del plano dentro de la carpeta de trabajo, por ejemplo "casa.plano".');
 const X = z.number().describe('Coordenada X en metros (crece hacia la derecha).');
@@ -52,7 +55,7 @@ export function crearServidor(a: Almacen, version = '0.1.0'): McpServer {
     const p = await a.leer(args.archivo);
     const resultado = fn(p, args);
     await a.guardar(args.archivo, p);
-    return texto({ ok: true, resultado, resumen: cmd.resumen(p) });
+    return texto({ ok: true, resultado, estado: cmd.estado(p) });
   });
   const modifica = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false };
   const lectura = { readOnlyHint: true, openWorldHint: false };
@@ -65,7 +68,7 @@ export function crearServidor(a: Almacen, version = '0.1.0'): McpServer {
   }, seguro(async args => {
     const p = cmd.crearPlano(args);
     const ruta = await a.guardar(args.archivo, p);
-    return texto({ ok: true, archivo: ruta, resumen: cmd.resumen(p) });
+    return texto({ ok: true, archivo: ruta, estado: cmd.estado(p) });
   }));
 
   server.registerTool('agregar_habitacion', {
@@ -90,12 +93,16 @@ export function crearServidor(a: Almacen, version = '0.1.0'): McpServer {
 
   server.registerTool('agregar_abertura', {
     title: 'Agregar puerta, ventana o vano',
-    description: 'Coloca una puerta, ventana o vano (paso sin puerta) sobre el muro más cercano al punto dado. El punto debe estar sobre el muro o a menos de 60 cm.',
+    description: 'Coloca una puerta, ventana o vano (paso sin puerta) sobre un muro. Hay dos formas de decir dónde: "recinto" y "lado" (la más simple), o un punto (x, y) sobre el muro o a menos de 60 cm de él.',
     inputSchema: {
-      archivo, tipo: z.enum(['puerta', 'ventana', 'vano']), x: X.describe('X del centro de la abertura, sobre el muro.'), y: Y.describe('Y del centro de la abertura, sobre el muro.'),
+      archivo, tipo: z.enum(['puerta', 'ventana', 'vano']),
+      recinto: z.string().optional().describe('Nombre del recinto en cuyo muro va, por ejemplo "Cocina". Úsalo junto con "lado".'),
+      lado: z.enum(['norte', 'sur', 'este', 'oeste']).optional().describe('Lado del recinto: norte es arriba (Y menor), sur abajo, oeste izquierda, este derecha.'),
+      posicion: z.number().optional().describe('Con recinto y lado: posición a lo largo de ese lado, de 0 a 1. 0,5 (por defecto) la centra. Se mide desde el oeste en los lados norte y sur, y desde el norte en los lados este y oeste.'),
+      x: X.optional().describe('Alternativa a recinto y lado: X del centro de la abertura, sobre el muro.'), y: Y.optional().describe('Alternativa a recinto y lado: Y del centro de la abertura, sobre el muro.'),
       ancho: z.number().optional().describe('Ancho en metros. Por defecto: puerta 0,80; ventana 1,20; vano 1,00.'),
       estilo: z.enum(['abatible', 'doble', 'corredera', 'fija']).optional().describe('Puertas: abatible, doble o corredera. Ventanas: corredera, abatible o fija.'),
-      abre_hacia: punto.optional().describe('Puertas: un punto del lado hacia donde abre, por ejemplo el centro del recinto.'),
+      abre_hacia: punto.optional().describe('Puertas: un punto del lado hacia donde abre. Con recinto y lado, por defecto abre hacia dentro de ese recinto.'),
       bisagra_cerca_de: punto.optional().describe('Puertas: un punto cercano al extremo del vano donde va la bisagra.'),
     },
     annotations: modifica,
@@ -103,21 +110,36 @@ export function crearServidor(a: Almacen, version = '0.1.0'): McpServer {
 
   server.registerTool('listar_muebles', {
     title: 'Listar muebles',
-    description: 'Devuelve el catálogo de muebles y símbolos (camas, sofás, artefactos de baño y cocina…) con su tipo y medidas. Consúltalo antes de agregar_mueble.',
+    description: 'Devuelve el catálogo de muebles y símbolos (camas, sofás, artefactos de baño y cocina…) con su tipo y medidas, y explica hacia dónde mira cada uno. Consúltalo antes de agregar_mueble.',
     inputSchema: {},
     annotations: lectura,
   }, seguro(async () => texto(cmd.listarMuebles())));
 
   server.registerTool('agregar_mueble', {
     title: 'Agregar mueble',
-    description: 'Coloca un mueble o símbolo del catálogo. x, y son su centro.',
+    description: 'Coloca un mueble o símbolo del catálogo. x, y son su centro; con "apoyar_en_muro" basta un punto aproximado y el mueble queda pegado al muro más cercano, con el respaldo contra él.',
     inputSchema: {
       archivo, tipo: z.string().describe('Tipo del catálogo, tal como lo entrega listar_muebles.'), x: X.describe('X del centro del mueble.'), y: Y.describe('Y del centro del mueble.'),
-      rotacion: z.number().optional().describe('Giro en grados (sentido horario en pantalla). 0 = como en el catálogo.'),
+      apoyar_en_muro: z.boolean().optional().describe('Pega el mueble al muro más cercano al punto (hasta 2,5 m) y lo gira para que el respaldo o la cabecera quede contra ese muro. Ideal para camas, sofás, clósets y artefactos.'),
+      respaldo_hacia: z.enum(['norte', 'sur', 'este', 'oeste']).optional().describe('Hacia dónde queda el respaldo o la cabecera. El frente queda al lado opuesto.'),
+      rotacion: z.number().optional().describe('Giro en grados, sentido horario. 0 = respaldo al norte, 90 al este, 180 al sur, 270 al oeste. Se ignora si se usa apoyar_en_muro o respaldo_hacia.'),
       ancho: z.number().optional().describe('Ancho en metros, si no se quiere el del catálogo.'), fondo: z.number().optional().describe('Fondo en metros, si no se quiere el del catálogo.'),
     },
     annotations: modifica,
   }, cambio((p, args) => cmd.agregarMueble(p, args)));
+
+  server.registerTool('mover_mueble', {
+    title: 'Mover o girar mueble',
+    description: 'Mueve o gira el mueble más cercano a un punto, sin borrarlo. Lo que no se indique se conserva.',
+    inputSchema: {
+      archivo, x: X.describe('X de un punto cercano al mueble que se quiere mover.'), y: Y.describe('Y de un punto cercano al mueble que se quiere mover.'),
+      nuevo_x: z.number().optional().describe('Nueva X del centro.'), nuevo_y: z.number().optional().describe('Nueva Y del centro.'),
+      apoyar_en_muro: z.boolean().optional().describe('Pega el mueble al muro más cercano a su nueva posición, con el respaldo contra él.'),
+      respaldo_hacia: z.enum(['norte', 'sur', 'este', 'oeste']).optional(),
+      rotacion: z.number().optional().describe('Giro en grados, sentido horario. 0 = respaldo al norte.'),
+    },
+    annotations: modifica,
+  }, cambio((p, args) => cmd.moverMueble(p, args)));
 
   server.registerTool('nombrar_recinto', {
     title: 'Nombrar recinto',
@@ -135,14 +157,14 @@ export function crearServidor(a: Almacen, version = '0.1.0'): McpServer {
 
   server.registerTool('eliminar', {
     title: 'Eliminar elemento',
-    description: 'Elimina el muro, abertura, mueble o texto más cercano al punto. Al borrar un muro se van también sus puertas y ventanas.',
+    description: 'Elimina el muro, abertura, mueble o texto más cercano al punto, y responde qué borró y dónde estaba. Al borrar un muro se van también sus puertas y ventanas. Para corregir un mueble usa mover_mueble.',
     inputSchema: { archivo, tipo: z.enum(['muro', 'abertura', 'mueble', 'texto']), x: X, y: Y },
     annotations: { ...modifica, destructiveHint: true },
   }, cambio((p, args) => cmd.eliminar(p, args)));
 
   server.registerTool('resumen', {
     title: 'Resumen del plano',
-    description: 'Devuelve el estado del plano en datos: recintos con su superficie y medidas interiores, muros, aberturas, muebles, límites y advertencias (muros sin unir, recintos sin nombre…). Úsalo para comprobar el trabajo.',
+    description: 'Devuelve el plano completo en datos: cada recinto con su superficie, su rectángulo interior y cuántas puertas y ventanas tiene; los ejes de todos los muros; aberturas y muebles con su posición; el tamaño de la construcción y las advertencias. Úsalo para comprobar el trabajo o cuando necesites coordenadas exactas.',
     inputSchema: { archivo },
     annotations: lectura,
   }, seguro(async args => texto(cmd.resumen(await a.leer(args.archivo)))));
@@ -174,7 +196,7 @@ export function crearServidor(a: Almacen, version = '0.1.0'): McpServer {
     const nombre = args.origen.replace(/^.*[\\/]/, '').replace(/\.(dxf|dwg)$/i, '');
     const { proyecto, info } = importarCad(doc, nombre, { modo: args.modo, unidad: args.unidad });
     const ruta = await a.guardar(args.archivo, proyecto);
-    return texto({ ok: true, archivo: ruta, importacion: info, resumen: cmd.resumen(proyecto) });
+    return texto({ ok: true, archivo: ruta, importacion: info, estado: cmd.estado(proyecto) });
   }));
 
   server.registerTool('exportar', {

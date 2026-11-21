@@ -38,18 +38,25 @@ export function importarCad(doc: CadDoc, nombre: string, o: ImportOpts = {}): { 
   const p = newProject(nombre), lv = p.levels[0];
   const shapes = cadToShapes(ents, factor, { x: 0, y: 0 });
   const modo = o.modo || 'muros';
+  const porCapa: Record<string, number> = {};
+  for (const s of shapes) porCapa[s.layer || '0'] = (porCapa[s.layer || '0'] || 0) + 1;
   const info: Record<string, unknown> = {
     elementos: ents.length,
+    elementos_por_capa: porCapa,
     unidad_usada: Object.keys(UNIDAD_M).find(k => Math.abs(UNIDAD_M[k] - factor) < 1e-9) || factor,
     unidad_declarada_en_el_archivo: !!doc.insUnits,
-    tamano_m: { ancho: Math.round((b.maxX - b.minX) * factor * 100) / 100, largo: Math.round((b.maxY - b.minY) * factor * 100) / 100 },
+    // todo el dibujo original, con sus cotas y textos; el tamaño de la construcción está en resumen.limites
+    tamano_dibujo_original_m: { ancho: Math.round((b.maxX - b.minX) * factor * 100) / 100, largo: Math.round((b.maxY - b.minY) * factor * 100) / 100 },
     modo,
   };
   if (modo === 'muros') {
     const res = convertShapes(lv, shapes, { height: p.settings.wallHeight, keepRest: true });
     if (res.walls) {
       lv.shapes = res.rest;
-      Object.assign(info, { muros: res.walls, puertas: res.doors, ventanas: res.windows, vanos: res.gaps, recintos_con_nombre: res.named, resto_como_calco: res.rest.length });
+      Object.assign(info, {
+        muros: res.walls, puertas: res.doors, ventanas: res.windows, vanos: res.gaps, recintos_con_nombre: res.named, resto_como_calco: res.rest.length,
+        nota: `De ${shapes.length} elementos, las líneas de muros, puertas y ventanas pasaron a ser elementos editables y ${res.rest.length} quedaron como calco. Las cotas y superficies que traía el dibujo no se conservan: el plano las calcula solo.`,
+      });
     } else {
       lv.shapes = shapes;
       Object.assign(info, { muros: 0, aviso: 'No se reconocieron muros (se buscan dos líneas paralelas separadas entre 5 y 45 cm). El dibujo quedó como calco; revisa la unidad.' });
@@ -120,7 +127,8 @@ export async function exportar(p: Project, formato: Formato, o: ExportOpts = {})
     Object.assign(po, centerOffset(escena(), po));
     const L = posterLayout(escena(), po);
     const blob = await exportPosterPdf(p, po);
-    return { bytes: new Uint8Array(await blob.arrayBuffer()), ext: 'pdf', info: { papel, escala: `1:${fmtScale(po.scale)}`, hojas: L.count, filas: L.rows, columnas: L.cols, paginas: L.count + (L.count > 1 ? 1 : 0), nota: 'Imprimir al 100 %, sin "ajustar a la página".' } };
+    const guia = L.count > 1;
+    return { bytes: new Uint8Array(await blob.arrayBuffer()), ext: 'pdf', info: { papel, escala: `1:${fmtScale(po.scale)}`, hojas: L.count, filas: L.rows, columnas: L.cols, paginas: L.count + (guia ? 1 : 0), guia_de_armado: guia, nota: `${guia ? 'La primera página es la guía de armado y las siguientes son las hojas del plano. ' : ''}Imprimir al 100 %, sin "ajustar a la página".` } };
   }
   throw new ComandoError('"formato" debe ser plano, dxf, svg, pdf o pdf_hojas.');
 }
