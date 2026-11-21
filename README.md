@@ -117,27 +117,21 @@ Para que la escala sea real hay que imprimir al 100 %, sin "ajustar a la página
 
 Además de la app, el repositorio trae una línea de comandos y un servidor [MCP](https://modelcontextprotocol.io) para que un agente (Claude u otro cliente MCP) dibuje, revise y exporte planos sin abrir el navegador. Usan el mismo código que la app, así que un plano hecho por un agente se abre y se sigue editando en PlanoLibre.
 
-Desde una copia del repositorio:
-
-```bash
-git clone https://github.com/AlexanderMercado/planolibre.git
-cd planolibre
-npm install        # también compila bin/planolibre.mjs
-```
-
-El paquete está preparado para publicarse en npm como `planolibre`. Cuando esté publicado, los mismos comandos se usan sin clonar nada, cambiando `node bin/planolibre.mjs` por `npx planolibre`.
+Está publicado en npm como [`planolibre`](https://www.npmjs.com/package/planolibre). Con [Node.js](https://nodejs.org) 20 o superior no hay que instalar nada más: `npx` lo descarga la primera vez.
 
 ### Línea de comandos
 
 ```bash
-node bin/planolibre.mjs convertir casa.dxf casa.pdf --escala 50 --papel A3
-node bin/planolibre.mjs convertir casa.plano casa-hojas.pdf --hojas --escala 25
-node bin/planolibre.mjs convertir casa.dxf casa.plano      # DXF/DWG a plano editable
-node bin/planolibre.mjs info casa.plano                    # recintos, superficies y advertencias
-node bin/planolibre.mjs ayuda
+npx planolibre convertir casa.dxf casa.pdf --escala 50 --papel A3
+npx planolibre convertir casa.plano casa-hojas.pdf --hojas --escala 25
+npx planolibre convertir casa.dxf casa.plano      # DXF/DWG a plano editable
+npx planolibre info casa.plano                    # recintos, superficies y advertencias
+npx planolibre ayuda
 ```
 
 Lee `.plano`, `.dxf` y `.dwg`; escribe `.plano`, `.pdf`, `.dxf`, `.svg` y `.png`.
+
+Para tenerlo siempre disponible como `planolibre`, instálalo con `npm install -g planolibre`. Desde una copia del repositorio, `npm install` compila `bin/planolibre.mjs` y se usa con `node bin/planolibre.mjs`.
 
 ### Servidor MCP
 
@@ -147,8 +141,8 @@ El servidor trabaja sobre archivos `.plano` de **una carpeta que tú eliges**: n
 {
   "mcpServers": {
     "planolibre": {
-      "command": "node",
-      "args": ["/ruta/a/planolibre/bin/planolibre.mjs", "mcp", "--carpeta", "/ruta/a/mis-planos"]
+      "command": "npx",
+      "args": ["-y", "planolibre", "mcp", "--carpeta", "/ruta/a/mis-planos"]
     }
   }
 }
@@ -157,7 +151,7 @@ El servidor trabaja sobre archivos `.plano` de **una carpeta que tú eliges**: n
 En Claude Code:
 
 ```bash
-claude mcp add planolibre -- node /ruta/a/planolibre/bin/planolibre.mjs mcp --carpeta /ruta/a/mis-planos
+claude mcp add planolibre -- npx -y planolibre mcp --carpeta /ruta/a/mis-planos
 ```
 
 Herramientas que ofrece:

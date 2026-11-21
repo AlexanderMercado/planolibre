@@ -96,14 +96,14 @@ Print at 100 %, without "fit to page", or the scale will be wrong.
 
 ## For agents and scripts: CLI and MCP server
 
-The repository also ships a command line tool and an [MCP](https://modelcontextprotocol.io) server, so an agent (Claude or any MCP client) can draw, check and export floor plans without opening the browser. They share the app's code, so a plan made by an agent opens and stays editable in PlanoLibre. Use it from a clone; once the package is published to npm as `planolibre`, replace `node bin/planolibre.mjs` with `npx planolibre`.
+The repository also ships a command line tool and an [MCP](https://modelcontextprotocol.io) server, so an agent (Claude or any MCP client) can draw, check and export floor plans without opening the browser. They share the app's code, so a plan made by an agent opens and stays editable in PlanoLibre.
+
+It is published on npm as [`planolibre`](https://www.npmjs.com/package/planolibre). With Node.js 20 or newer, `npx` fetches it on first use:
 
 ```bash
-git clone https://github.com/AlexanderMercado/planolibre.git
-cd planolibre
-npm install        # also builds bin/planolibre.mjs
-node bin/planolibre.mjs convertir house.dxf house.pdf --escala 50 --papel A3
-node bin/planolibre.mjs info house.plano
+npx planolibre convertir house.dxf house.pdf --escala 50 --papel A3
+npx planolibre info house.plano
+npx planolibre ayuda        # help (in Spanish)
 ```
 
 MCP client configuration. The server only reads and writes inside the folder you pass:
@@ -112,8 +112,8 @@ MCP client configuration. The server only reads and writes inside the folder you
 {
   "mcpServers": {
     "planolibre": {
-      "command": "node",
-      "args": ["/path/to/planolibre/bin/planolibre.mjs", "mcp", "--carpeta", "/path/to/my-plans"]
+      "command": "npx",
+      "args": ["-y", "planolibre", "mcp", "--carpeta", "/path/to/my-plans"]
     }
   }
 }
