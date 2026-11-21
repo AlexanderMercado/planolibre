@@ -106,6 +106,8 @@ npx planolibre info house.plano
 npx planolibre ayuda        # help (in Spanish)
 ```
 
+> **Inside a clone of this repository, `npx planolibre` does not work.** The project has the same name as the package, so npx tries to use the local project instead of the published one and fails with `planolibre: command not found`. There, run `node bin/planolibre.mjs` (built by `npm install`), also in the MCP server configuration. From any other folder, `npx planolibre` works normally.
+
 MCP client configuration. The server only reads and writes inside the folder you pass:
 
 ```json

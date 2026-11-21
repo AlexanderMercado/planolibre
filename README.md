@@ -131,7 +131,9 @@ npx planolibre ayuda
 
 Lee `.plano`, `.dxf` y `.dwg`; escribe `.plano`, `.pdf`, `.dxf`, `.svg` y `.png`.
 
-Para tenerlo siempre disponible como `planolibre`, instálalo con `npm install -g planolibre`. Desde una copia del repositorio, `npm install` compila `bin/planolibre.mjs` y se usa con `node bin/planolibre.mjs`.
+Para tenerlo siempre disponible como `planolibre`, instálalo con `npm install -g planolibre`.
+
+> **Dentro de una copia de este repositorio, `npx planolibre` no funciona.** Como el proyecto se llama igual que el paquete, npx intenta usar el proyecto local en vez del publicado y responde `planolibre: command not found`. Ahí usa `node bin/planolibre.mjs` (lo compila `npm install`), también en la configuración del servidor MCP. Desde cualquier otra carpeta, `npx planolibre` funciona normalmente.
 
 ### Servidor MCP
 
