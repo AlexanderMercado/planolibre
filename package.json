@@ -1,13 +1,42 @@
 {
   "name": "planolibre",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Editor de planos 2D/3D de código abierto que funciona 100% local en el navegador, con línea de comandos y servidor MCP para agentes.",
+  "keywords": [
+    "floor-plan",
+    "floorplan",
+    "planos",
+    "cad",
+    "dxf",
+    "dwg",
+    "pdf",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "cli"
+  ],
   "license": "GPL-3.0-or-later",
-  "private": true,
+  "homepage": "https://alexandermercado.github.io/planolibre/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexanderMercado/planolibre.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AlexanderMercado/planolibre/issues"
+  },
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "bin": {
     "planolibre": "bin/planolibre.mjs"
   },
+  "files": [
+    "bin",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -15,14 +44,13 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build:cli": "vite build --config vite.cli.config.ts",
-    "prepare": "npm run build:cli"
+    "prepare": "npm run build:cli",
+    "prepublishOnly": "npm run typecheck && npm test"
   },
   "dependencies": {
     "@mlightcad/libredwg-web": "^0.9.0",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "jspdf": "^4.2.1",
-    "pdfjs-dist": "^4.10.38",
-    "three": "^0.170.0",
     "zod": "^4.6.7"
   },
   "optionalDependencies": {
@@ -31,6 +59,8 @@
   "devDependencies": {
     "@types/node": "^20.19.43",
     "@types/three": "^0.170.0",
+    "pdfjs-dist": "^4.10.38",
+    "three": "^0.170.0",
     "typescript": "^5.6.3",
     "vite": "^6.0.0",
     "vitest": "^4.1.12"

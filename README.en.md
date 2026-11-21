@@ -96,7 +96,7 @@ Print at 100 %, without "fit to page", or the scale will be wrong.
 
 ## For agents and scripts: CLI and MCP server
 
-The repository also ships a command line tool and an [MCP](https://modelcontextprotocol.io) server, so an agent (Claude or any MCP client) can draw, check and export floor plans without opening the browser. They share the app's code, so a plan made by an agent opens and stays editable in PlanoLibre. Not published to npm yet: use it from a clone.
+The repository also ships a command line tool and an [MCP](https://modelcontextprotocol.io) server, so an agent (Claude or any MCP client) can draw, check and export floor plans without opening the browser. They share the app's code, so a plan made by an agent opens and stays editable in PlanoLibre. Use it from a clone; once the package is published to npm as `planolibre`, replace `node bin/planolibre.mjs` with `npx planolibre`.
 
 ```bash
 git clone https://github.com/AlexanderMercado/planolibre.git

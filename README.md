@@ -117,13 +117,15 @@ Para que la escala sea real hay que imprimir al 100 %, sin "ajustar a la página
 
 Además de la app, el repositorio trae una línea de comandos y un servidor [MCP](https://modelcontextprotocol.io) para que un agente (Claude u otro cliente MCP) dibuje, revise y exporte planos sin abrir el navegador. Usan el mismo código que la app, así que un plano hecho por un agente se abre y se sigue editando en PlanoLibre.
 
-Todavía no está publicado en npm: se usa desde una copia del repositorio.
+Desde una copia del repositorio:
 
 ```bash
 git clone https://github.com/AlexanderMercado/planolibre.git
 cd planolibre
 npm install        # también compila bin/planolibre.mjs
 ```
+
+El paquete está preparado para publicarse en npm como `planolibre`. Cuando esté publicado, los mismos comandos se usan sin clonar nada, cambiando `node bin/planolibre.mjs` por `npx planolibre`.
 
 ### Línea de comandos
 
