@@ -119,7 +119,7 @@ MCP client configuration. The server only reads and writes inside the folder you
 }
 ```
 
-Tool names, parameters and descriptions are in Spanish (`crear_plano`, `agregar_habitacion`, `agregar_abertura`, `resumen`, `vista_previa`, `importar`, `exportar`…). Every tool that changes the plan returns an updated summary with areas and warnings, so the agent can correct itself. Measurements are in metres, X to the right and Y downwards. See the [Spanish README](README.md#para-agentes-y-scripts-línea-de-comandos-y-mcp) for the full tool list.
+Tool names, parameters and descriptions are in Spanish (`crear_plano`, `agregar_habitacion`, `agregar_abertura`, `mover_mueble`, `resumen`, `vista_previa`, `importar`, `exportar`…). Doors and windows can be placed by room name and side, and furniture can snap against the nearest wall. Every tool that changes the plan returns a short status with warnings (unjoined walls, rooms without a door, furniture overlapping a wall, another item or a door swing), so the agent can correct itself. Measurements are in metres, X to the right and Y downwards. See the [Spanish README](README.md#para-agentes-y-scripts-línea-de-comandos-y-mcp) for the full tool list.
 
 ![Apartment plan drawn through the MCP server](docs/img/hecho-por-agente.png)
 

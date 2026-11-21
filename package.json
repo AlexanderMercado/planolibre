@@ -1,6 +1,6 @@
 {
   "name": "planolibre",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Editor de planos 2D/3D de código abierto que funciona 100% local en el navegador, con línea de comandos y servidor MCP para agentes.",
   "keywords": [
     "floor-plan",

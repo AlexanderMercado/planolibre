@@ -161,16 +161,19 @@ Herramientas que ofrece:
 | `crear_plano` | Crea un plano vacío |
 | `agregar_habitacion` | Habitación rectangular completa, unida a lo que ya exista |
 | `agregar_muro` | Un muro entre dos puntos |
-| `agregar_abertura` | Puerta, ventana o vano sobre el muro más cercano |
-| `listar_muebles`, `agregar_mueble` | Catálogo de 42 muebles y colocación |
+| `agregar_abertura` | Puerta, ventana o vano: por recinto y lado ("Cocina", "norte") o por un punto sobre el muro |
+| `listar_muebles`, `agregar_mueble` | Catálogo de 42 muebles y colocación; puede apoyarlos solos contra el muro más cercano |
+| `mover_mueble` | Mueve o gira un mueble sin borrarlo |
 | `nombrar_recinto`, `agregar_texto` | Nombres y notas |
 | `eliminar` | Borra el muro, abertura, mueble o texto más cercano a un punto |
-| `resumen` | Recintos, superficies, medidas y advertencias, en datos |
+| `resumen` | El plano completo en datos: recintos con superficie y puertas, ejes de los muros, muebles y advertencias |
 | `vista_previa` | Imagen del plano, para que el agente lo revise |
 | `importar` | DXF o DWG a muros editables, calco o visor |
 | `exportar` | PDF a escala, PDF en varias hojas, DXF o SVG |
 
-Cada herramienta que modifica el plano devuelve el resumen actualizado, con advertencias como "hay un extremo de muro sin unir" o "un recinto no tiene nombre", para que el agente se corrija solo. Las medidas van en metros, con X hacia la derecha e Y hacia abajo.
+Cada herramienta que modifica el plano responde con un estado corto y sus advertencias, para que el agente se corrija solo: muros sin unir, recintos sin nombre o sin puerta, muebles encimados, metidos en un muro o que estorban el barrido de una puerta. Las medidas van en metros, con X hacia la derecha e Y hacia abajo.
+
+El servidor se afinó con la prueba de un agente real: un modelo que no conocía el código dibujó una casa de 71 m² sólo con estas herramientas, y de sus tropiezos salieron la ubicación por recinto y lado, el apoyo en muros y los avisos de choques.
 
 Este plano lo dibujó un cliente MCP de prueba con 14 llamadas (cuatro habitaciones, seis aberturas y dos muebles):
 
@@ -240,7 +243,7 @@ La idea central: `scene.ts` genera **una sola lista de primitivas** (polilíneas
 Las bibliotecas pesadas se cargan sólo cuando hacen falta: jsPDF al exportar, pdf.js al importar un PDF, three.js al entrar a 3D y LibreDWG (8 MB) al abrir un DWG.
 
 ```bash
-npm test          # 35 pruebas automáticas
+npm test          # 41 pruebas automáticas
 npm run typecheck
 ```
 
