@@ -66,17 +66,8 @@ function convert(e: any): CadEnt | null {
 
 let libPromise: Promise<any> | null = null;
 
-/**
- * @param asDxf sólo para pruebas: usa el lector DXF de LibreDWG en vez del de DWG
- */
-export async function parseDwg(data: ArrayBuffer | string, asDxf = false): Promise<CadDoc> {
-  const mod = await import('@mlightcad/libredwg-web');
-  if (!libPromise) {
-    // el .wasm se sirve como recurso estático junto a la app
-    const wasmUrl = new URL('../../node_modules/@mlightcad/libredwg-web/wasm/libredwg-web.wasm', import.meta.url).href;
-    libPromise = (mod as any).createModule({ locateFile: (name: string) => (name.endsWith('.wasm') ? wasmUrl : name) }).then((w: any) => mod.LibreDwg.createByWasmInstance(w));
-  }
-  const lib = await libPromise;
+/** Convierte lo que entrega LibreDWG en el documento CAD común. `mod` es el paquete y `lib` la instancia ya creada. */
+export function readDwgWith(mod: any, lib: any, data: ArrayBuffer | string, asDxf = false): CadDoc {
   const ptr = lib.dwg_read_data(data, asDxf ? mod.Dwg_File_Type.DXF : mod.Dwg_File_Type.DWG);
   if (!ptr) throw new Error('No se pudo leer el DWG. Puede estar dañado o ser de una versión no soportada.');
   let db: any;
@@ -91,4 +82,14 @@ export async function parseDwg(data: ArrayBuffer | string, asDxf = false): Promi
   }
   for (const e of db?.entities || []) { const c = convert(e); if (c) doc.ents.push(c); }
   return doc;
+}
+
+export async function parseDwg(data: ArrayBuffer | string, asDxf = false): Promise<CadDoc> {
+  const mod = await import('@mlightcad/libredwg-web');
+  if (!libPromise) {
+    // el .wasm se sirve como recurso estático junto a la app
+    const wasmUrl = new URL('../../node_modules/@mlightcad/libredwg-web/wasm/libredwg-web.wasm', import.meta.url).href;
+    libPromise = (mod as any).createModule({ locateFile: (name: string) => (name.endsWith('.wasm') ? wasmUrl : name) }).then((w: any) => mod.LibreDwg.createByWasmInstance(w));
+  }
+  return readDwgWith(mod, await libPromise, data, asDxf);
 }
